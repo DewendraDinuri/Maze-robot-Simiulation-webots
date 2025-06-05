@@ -3,6 +3,7 @@ from controller import Robot, Motor
 import heapq
 
 # -------------------- Maze and Dijkstra -------------------- #
+# Sample 5x5 grid: 0 = free path, 1 = wall
 maze = [
     [0, 1, 0, 0, 0],
     [0, 1, 0, 1, 0],
@@ -59,6 +60,7 @@ motorR = robot.getDevice("motorR")
 motorL.setPosition(float('inf'))
 motorR.setPosition(float('inf'))
 
+# Max speed depends on robot, here assumed 6.28 rad/s
 MAX_SPEED = 6.28
 
 def move_forward(duration_steps):
@@ -79,12 +81,13 @@ def turn_right(duration_steps):
         motorR.setVelocity(-0.5 * MAX_SPEED)
         robot.step(TIME_STEP)
 
-# -------------------- Execute Dijkstra Path -------------------- #
+# -------------------- Path Execution -------------------- #
 path = dijkstra(maze, start, goal)
 print("Planned Path:", path)
 
-direction = (1, 0)
-dir_map = {(1,0):0, (0,1):1, (-1,0):2, (0,-1):3}
+# Movement logic: assuming each cell = 1 move_forward, turns decided by direction
+direction = (1, 0)  # Facing down initially
+dir_map = {(1,0):0, (0,1):1, (-1,0):2, (0,-1):3}  # down, right, up, left
 for i in range(1, len(path)):
     curr = path[i-1]
     next = path[i]
@@ -104,5 +107,6 @@ for i in range(1, len(path)):
     move_forward(20)
     direction = move
 
+# Stop motors after reaching goal
 motorL.setVelocity(0)
 motorR.setVelocity(0)
