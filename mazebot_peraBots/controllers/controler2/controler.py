@@ -1,32 +1,43 @@
-"""controler2 controller."""
-
-# You may need to import some classes of the controller module. Ex:
-#  from controller import Robot, Motor, DistanceSensor
+# controler2.py
 from controller import Robot
 
-# create the Robot instance.
 robot = Robot()
+TIME_STEP = int(robot.getBasicTimeStep())
 
-# get the time step of the current world.
-timestep = int(robot.getBasicTimeStep())
+# Devices
+motorL = robot.getDevice("motorL")
+motorR = robot.getDevice("motorR")
+motorL.setPosition(float('inf'))
+motorR.setPosition(float('inf'))
+motorL.setVelocity(0.0)
+motorR.setVelocity(0.0)
 
-# You should insert a getDevice-like function in order to get the
-# instance of a device of the robot. Something like:
-#  motor = robot.getDevice('motorname')
-#  ds = robot.getDevice('dsname')
-#  ds.enable(timestep)
+# Example: Predefined path actions (can be replaced with Dijkstra-based dynamic movement)
+def move_forward(duration=10, speed=6.0):
+    motorL.setVelocity(speed)
+    motorR.setVelocity(speed)
+    for _ in range(duration):
+        robot.step(TIME_STEP)
 
-# Main loop:
-# - perform simulation steps until Webots is stopping the controller
-while robot.step(timestep) != -1:
-    # Read the sensors:
-    # Enter here functions to read sensor data, like:
-    #  val = ds.getValue()
+def turn_left(duration=5, speed=4.0):
+    motorL.setVelocity(-speed)
+    motorR.setVelocity(speed)
+    for _ in range(duration):
+        robot.step(TIME_STEP)
 
-    # Process sensor data here.
+def turn_right(duration=5, speed=4.0):
+    motorL.setVelocity(speed)
+    motorR.setVelocity(-speed)
+    for _ in range(duration):
+        robot.step(TIME_STEP)
 
-    # Enter here functions to send actuator commands, like:
-    #  motor.setPosition(10.0)
-    pass
+# Path-following logic example (mocked)
+move_forward(20)
+turn_left(10)
+move_forward(20)
+turn_right(10)
+move_forward(20)
 
-# Enter here exit cleanup code.
+motorL.setVelocity(0)
+motorR.setVelocity(0)
+print("Path following complete.")
