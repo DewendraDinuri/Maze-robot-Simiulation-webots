@@ -1,0 +1,420 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/Pcb.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/Rubber.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/BrushedAluminium.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/Copper.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation 0.21325233165355617 0.8323980169384022 -0.5115046279764607 0.9286649081104893
+  position -2.1093473864074963 1.0526579364277755 2.6716058213680607
+  follow "robot"
+  followType "None"
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 2 2
+  floorAppearance PBRAppearance {
+    roughness 1
+    roughnessMap ImageTexture {
+      url [
+        "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/textures/parquetry/mosaic_parquetry_roughness.jpg"
+      ]
+    }
+    metalness 0
+    normalMap ImageTexture {
+      url [
+        "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/textures/parquetry/mosaic_parquetry_normal.jpg"
+      ]
+    }
+    occlusionMap ImageTexture {
+      url [
+        "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/textures/parquetry/mosaic_parquetry_occlusion.jpg"
+      ]
+    }
+  }
+}
+Solid {
+  translation 0.45 -0.73 0.05
+  rotation 0 0 -1 -0.13090030610042527
+  children [
+    DEF obstacle1 Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.1 0.1 0.1
+      }
+    }
+  ]
+  boundingObject USE obstacle1
+  locked TRUE
+}
+Solid {
+  translation 0.666748 -0.198009 0.05
+  rotation 0 0 -1 -1.3089953071795861
+  children [
+    DEF obstacle2 Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.2 0.1 0.1
+      }
+    }
+  ]
+  name "solid(1)"
+  boundingObject USE obstacle2
+  locked TRUE
+}
+Solid {
+  translation 0.36358 0.381911 0.05
+  rotation 0 0 -1 -1.047195307179586
+  children [
+    DEF obstacle3 Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.12 0.1 0.1
+      }
+    }
+  ]
+  name "solid(3)"
+  boundingObject USE obstacle3
+  locked TRUE
+}
+Solid {
+  translation -0.380764 0.661551 0.05
+  rotation 0 0 1 2.09439
+  children [
+    DEF obstacle4 Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.12 0.1 0.1
+      }
+    }
+  ]
+  name "solid(4)"
+  boundingObject USE obstacle4
+  locked TRUE
+}
+Solid {
+  translation -0.545793 -0.0756207 0.05
+  rotation 0 0 1 1.83259
+  children [
+    DEF obstacle5 Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.1 0.3 0.1
+      }
+    }
+  ]
+  name "solid(5)"
+  boundingObject USE obstacle5
+  locked TRUE
+}
+Solid {
+  translation -0.356546 -0.527723 0
+  rotation 0 0 1 2.8797896938995744
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 1 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.03 0.51 0.0005
+      }
+    }
+  ]
+  name "solid(6)"
+  locked TRUE
+}
+Solid {
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry Mesh {
+        url [
+          "../path/outer_path.obj"
+        ]
+      }
+    }
+  ]
+  name "solid(2)"
+  boundingObject Mesh {
+    url [
+      "../path/outer_path.obj"
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry Mesh {
+        url [
+          "../path/inner_path.obj"
+        ]
+      }
+    }
+  ]
+  name "solid(7)"
+  boundingObject Mesh {
+    url [
+      "../path/inner_path.obj"
+    ]
+  }
+  locked TRUE
+}
+Robot {
+  translation -0.539503 -0.399934 0.02
+  rotation 0 0 1 -0.5236053071795865
+  children [
+    DistanceSensor {
+      translation 0.05 0 0
+      children [
+        Shape {
+          appearance Copper {
+          }
+          geometry Box {
+            size 0.005 0.005 0.005
+          }
+        }
+      ]
+      name "senF"
+      lookupTable [
+        0.05 1024 0
+        0.3 0 0
+      ]
+    }
+    DistanceSensor {
+      translation 0.045 -0.02 0
+      rotation 0 0 1 -0.3926996938995747
+      children [
+        Shape {
+          appearance Copper {
+          }
+          geometry Box {
+            size 0.005 0.005 0.005
+          }
+        }
+      ]
+      name "senR1"
+      lookupTable [
+        0.05 1024 0
+        0.3 0 0
+      ]
+    }
+    DistanceSensor {
+      translation 0.045 0.02 0
+      rotation 0 0 1 0.3927
+      children [
+        Shape {
+          appearance Copper {
+          }
+          geometry Box {
+            size 0.005 0.005 0.005
+          }
+        }
+      ]
+      name "senL1"
+      lookupTable [
+        0.05 1024 0
+        0.3 0 0
+      ]
+    }
+    DistanceSensor {
+      translation 0.032 -0.037 0
+      rotation 0 0 1 -0.9163003061004252
+      children [
+        Shape {
+          appearance Copper {
+          }
+          geometry Box {
+            size 0.005 0.005 0.005
+          }
+        }
+      ]
+      name "senR2"
+      lookupTable [
+        0.05 1024 0
+        0.3 0 0
+      ]
+    }
+    DistanceSensor {
+      translation 0.032 0.037 0
+      rotation 0 0 1 0.9163
+      children [
+        Shape {
+          appearance Copper {
+          }
+          geometry Box {
+            size 0.005 0.005 0.005
+          }
+        }
+      ]
+      name "senL2"
+      lookupTable [
+        0.05 1024 0
+        0.3 0 0
+      ]
+    }
+    Solid {
+      translation -0.03 0 -0.01
+      children [
+        DEF stub Shape {
+          geometry Capsule {
+            height 0.01
+            radius 0.005
+          }
+        }
+      ]
+      name "stub"
+      boundingObject USE stub
+      physics Physics {
+      }
+    }
+    Solid {
+      translation 0.03 0 -0.01
+      children [
+        DEF stub Shape {
+          geometry Capsule {
+            height 0.01
+            radius 0.005
+          }
+        }
+      ]
+      name "stubF"
+      boundingObject USE stub
+      physics Physics {
+      }
+    }
+    HingeJoint {
+      endPoint Solid {
+        translation 0.05 0 0.04
+        rotation 0 1 0 1.8326
+        children [
+          Camera {
+            rotation 0 1 0 -1.5707953071795862
+            name "cam"
+            fieldOfView 1
+            width 640
+            height 480
+          }
+          Shape {
+            appearance BrushedAluminium {
+            }
+            geometry Cylinder {
+              height 0.005
+              radius 0.005
+            }
+          }
+        ]
+        name "cameraMount"
+      }
+    }
+    DEF body Shape {
+      appearance Pcb {
+      }
+      geometry Cylinder {
+        height 0.03
+        radius 0.05
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor 0 0.055 0
+      }
+      device [
+        RotationalMotor {
+          name "motorL"
+        }
+      ]
+      endPoint Solid {
+        translation -1.5701e-18 0.035 -6.7342e-08
+        rotation 1 0 -7.850449076788095e-17 1.5707996938995747
+        children [
+          DEF wheelL Shape {
+            appearance Rubber {
+            }
+            geometry Cylinder {
+              height 0.01
+              radius 0.02
+            }
+          }
+        ]
+        boundingObject USE wheelL
+        physics DEF wheelPhysics Physics {
+        }
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor 0 -0.055 0
+      }
+      device [
+        RotationalMotor {
+          name "motorR"
+        }
+      ]
+      endPoint Solid {
+        translation -9.81306e-18 -0.035 6.7342e-08
+        rotation 1 3.925224538394047e-16 9.813061345985117e-17 1.5707996938995747
+        children [
+          DEF wheelR Shape {
+            appearance Rubber {
+            }
+            geometry Cylinder {
+              height 0.01
+              radius 0.02
+            }
+          }
+        ]
+        name "solid(1)"
+        boundingObject USE wheelR
+        physics DEF wheelPhysics Physics {
+        }
+      }
+    }
+  ]
+  boundingObject USE body
+  physics Physics {
+  }
+  controller "runThrough"
+}
