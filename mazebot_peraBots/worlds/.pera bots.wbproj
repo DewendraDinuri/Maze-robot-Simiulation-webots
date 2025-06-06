@@ -5,7 +5,7 @@ sceneTreePerspectives: 000000ff00000001000000030000001e000000c0000000fa010000000
 maximizedDockId: -1
 centralWidgetVisible: 1
 orthographicViewHeight: 1
-textFiles: 0 "controllers/controler2/controler2.py" "controllers/runThrough/runThrough.py"
-globalOptionalRendering: DistanceSensorRays
+textFiles: 1 "controllers/runThrough/controller2.py" "controllers/runThrough/runThrough.py"
+globalOptionalRendering: DistanceSensorRays::CameraFrustums
 consoles: Console:All:All
 renderingDevicePerspectives: robot:cam;1;0.23125;0;0
