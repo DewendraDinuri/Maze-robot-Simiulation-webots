@@ -1,150 +1,182 @@
 
-from controller import Robot, Motor, PositionSensor
 import heapq
-import math
 
-robot = Robot()
-TIME_STEP = int(robot.getBasicTimeStep())
+def heuristic(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
-# Motors and encoders
-motorL = robot.getDevice("motorL")
-motorR = robot.getDevice("motorR")
-motorL.setPosition(float('inf'))
-motorR.setPosition(float('inf'))
-MAX_SPEED = 3.0
+def astar(grid, start, goal):
+    open_set = [(0 + heuristic(start, goal), 0, tuple(start))]
+    came_from = {}
+    g_score = {tuple(start): 0}
 
-left_sensor = motorL.getPositionSensor()
-right_sensor = motorR.getPositionSensor()
-left_sensor.enable(TIME_STEP)
-right_sensor.enable(TIME_STEP)
-
-# Wheel and robot parameters
-WHEEL_RADIUS = 0.0205  # meters
-AXLE_LENGTH = 0.053  # meters (distance between wheels)
-CELL_SIZE = 0.1  # 10 cm per grid cell
-ENCODER_RESOLUTION = 6.28  # assuming 1 rotation = 6.28 rad
-
-GRID_SIZE = 20
-POSITION_TOLERANCE = 0.05  # in meters
-
-# Grid map
-grid = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
-for i in range(GRID_SIZE):
-    grid[0][i] = 1
-    grid[GRID_SIZE-1][i] = 1
-    grid[i][0] = 1
-    grid[i][GRID_SIZE-1] = 1
-
-goal_pos = [18, 18]
-direction = (0, 1)
-dir_map = {(1,0):0, (0,1):1, (-1,0):2, (0,-1):3}
-
-# Robot starts in center of grid (estimated)
-robot_pos = [10, 10]
-robot_theta = 0.0  # facing +Y (0 degrees)
-
-def dijkstra(grid, start, goal):
-    distances = {tuple(start): 0}
-    parent = {tuple(start): None}
-    visited = set()
-    pq = [(0, tuple(start))]
-
-    while pq:
-        dist, current = heapq.heappop(pq)
-        if current in visited:
-            continue
-        visited.add(current)
+    while open_set:
+        _, current_g, current = heapq.heappop(open_set)
 
         if current == tuple(goal):
             break
 
         r, c = current
-        for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-            nr, nc = r+dr, c+dc
-            if 0 <= nr < GRID_SIZE and 0 <= nc < GRID_SIZE and grid[nr][nc] == 0:
-                new_dist = dist + 1
-                if (nr, nc) not in distances or new_dist < distances[(nr, nc)]:
-                    distances[(nr, nc)] = new_dist
-                    parent[(nr, nc)] = current
-                    heapq.heappush(pq, (new_dist, (nr, nc)))
+        for dr, dc in [(-1,0), (1,0), (0,-1), (0,1)]:
+            nr, nc = r + dr, c + dc
+            neighbor = (nr, nc)
+            if 0 <= nr < len(grid) and 0 <= nc < len(grid[0]) and grid[nr][nc] == 0:
+                tentative_g = current_g + 1
+                if neighbor not in g_score or tentative_g < g_score[neighbor]:
+                    g_score[neighbor] = tentative_g
+                    f_score = tentative_g + heuristic(neighbor, goal)
+                    heapq.heappush(open_set, (f_score, tentative_g, neighbor))
+                    came_from[neighbor] = current
 
     path = []
     current = tuple(goal)
-    while current:
+    while current in came_from:
         path.append(current)
-        current = parent.get(current)
+        current = came_from[current]
+    path.append(tuple(start))
     path.reverse()
     return path
 
-def stop_motors():
-    motorL.setVelocity(0)
-    motorR.setVelocity(0)
+"""robot_controller controller."""
 
-def turn_left():
-    steps = 15
-    for _ in range(steps):
-        motorL.setVelocity(-0.5 * MAX_SPEED)
-        motorR.setVelocity(0.5 * MAX_SPEED)
-        robot.step(TIME_STEP)
+# You may need to import more classes/modules from the controller
+# depending on your robot's functionality
+from controller import Robot, Camera, Motor
 
-def turn_right():
-    steps = 15
-    for _ in range(steps):
-        motorL.setVelocity(0.5 * MAX_SPEED)
-        motorR.setVelocity(-0.5 * MAX_SPEED)
-        robot.step(TIME_STEP)
+# Custom function to Map sensor input values
+def map_value(value, in_min, in_max, out_min, out_max):
+    """
+    Maps a value from one range to another range.
 
-def move_forward_distance(distance):
-    motorL.setVelocity(MAX_SPEED)
-    motorR.setVelocity(MAX_SPEED)
+    Args:
+        value (float/int): The value to map.
+        in_min (float/int): The minimum value of the input range.
+        in_max (float/int): The maximum value of the input range.
+        out_min (float/int): The minimum value of the output range.
+        out_max (float/int): The maximum value of the output range.
 
-    start_left = left_sensor.getValue()
-    start_right = right_sensor.getValue()
+    Returns:
+        float: The mapped value.
+    """
+    # Calculate the ratio of the value's position in the input range
+    in_range = in_max - in_min
+    if in_range == 0: # Avoid division by zero if input range is just a single point
+        return out_min # Or raise an error, depending on desired behavior
 
-    while robot.step(TIME_STEP) != -1:
-        dl = (left_sensor.getValue() - start_left) * WHEEL_RADIUS
-        dr = (right_sensor.getValue() - start_right) * WHEEL_RADIUS
-        avg_dist = (dl + dr) / 2
-        if avg_dist >= distance:
-            break
+    ratio = (value - in_min) / in_range
 
-    stop_motors()
+    # Map the ratio to the output range
+    out_range = out_max - out_min
+    mapped_value = ratio * out_range + out_min
 
-def update_position(move):
-    robot_pos[0] += move[0]
-    robot_pos[1] += move[1]
+    return mapped_value
 
-path = dijkstra(grid, robot_pos, goal_pos)
-print("Mapped path:", path)
-path_index = 0
+# Create the Robot instance.
+robot = Robot()
 
+# Get the time step of the current world.
+TIME_STEP = int(robot.getBasicTimeStep())
+
+# Get Distance Sensors
+sensors = ['senF', 'senR1', 'senR2', 'senL1', 'senL2']
+sensor_list = []
+
+for name in sensors:
+    sensor = robot.getDevice(name)
+    if sensor:
+        sensor_list.append(sensor)
+        # --- 2. Enable the Distance Sensor ---
+        # Sampling period should typically be TIME_STEP or a multiple.
+        sensor.enable(TIME_STEP)
+        print(f"Enabled sensor: {name}, minRange: {sensor.getMinValue():.2f}m, maxRange: {sensor.getMaxValue():.2f}m")
+    else:
+        print(f"Error: Distance sensor '{name}' not found.")
+        
+front_thres = 0.2
+side1_thres = 0.2 
+side2_thres = 0.2
+# Get the camera and set variables
+camera_name = "cam"
+camera = robot.getDevice(camera_name)
+camera.enable(TIME_STEP)
+
+cam_width = camera.getWidth()
+cam_height = camera.getHeight()
+
+# Get the motor devices
+motorL = robot.getDevice("motorL")
+motorR = robot.getDevice("motorR")
+
+# Check if motors are found
+if motorL is None:
+    print("Motor 'motorL' not found.")
+if motorR is None:
+    print("Motor 'motorR' not found.")
+
+if motorL and motorR:
+    # Set the motors to velocity control mode
+    # This is done by setting the position to infinity
+    motorL.setPosition(float('inf'))
+    motorR.setPosition(float('inf'))
+
+    # Set an initial velocity (e.g., 50% of max speed)
+    # The velocity unit is rad/s
+    # You might need to adjust this value depending on your robot's max motor speed
+    
+#    left_speed = 0.0  # radians per second
+#    right_speed = 0.0 # radians per second
+
+#    motorL.setVelocity(left_speed)
+#    motorR.setVelocity(right_speed)
+    
+    print("Robot initialized.")
+
+# Main loop:
+# - perform simulation steps until Webots is stopping the controller
 while robot.step(TIME_STEP) != -1:
-    if path_index >= len(path):
-        stop_motors()
-        break
+    sensor_readings = {}
+    for sensor in sensor_list:
+        # getValue() returns the raw sensor reading (e.g., 0-1024)
+        raw_value = sensor.getValue()
+        # getDistance() converts the raw value to meters using the lookupTable
+        distance_in_meters = map_value(sensor.getValue(), 0, 1023, 0.1, 0.3)
+        sensor_readings[sensor.getName()] = distance_in_meters
+        print(f"Sensor '{sensor.getName()}': {distance_in_meters:.3f} m (raw: {raw_value:.0f})")
+        
+#    forward_speed = 0.5 # Default speed
+#    turn_speed = 0.0    # Default turn
+    
+    left_dist = sensor_readings.get("senL2", float('inf'))
+    front_left_dist = sensor_readings.get("senL1", float('inf'))
+    front_dist = sensor_readings.get("senF", float('inf'))
+    front_right_dist = sensor_readings.get("senR1", float('inf'))
+    right_dist = sensor_readings.get("senR2", float('inf'))
+    
+    # Check if a front obstacle is detected
+    if front_dist > front_thres:
+        print("Front obstacle! Turning right.")
+        turn_speed = 2 # Turn left (positive angular velocity)
+        forward_speed = 3 # Slow down
+    elif front_left_dist > side1_thres:
+        print("Front-left obstacle! Turning right.")
+        turn_speed = -1 # Turn right
+        forward_speed = 5 # Slow down
+    elif front_right_dist > side1_thres:
+        print("Front-right obstacle! Turning left.")
+        turn_speed = 1 # Turn left (positive angular velocity)
+        forward_speed = 5 # Slow down
+    elif left_dist > side2_thres:
+        print("Left obstacle! Turning right.")
+        turn_speed = -1 # Turn right
+        forward_speed = 7 # Slow down
+    elif right_dist > side2_thres:
+        print("Right obstacle! Turning left.")
+        turn_speed = 1 # Turn left (positive angular velocity)
+        forward_speed = 7 # Slow down
+    else:
+        # If no immediate obstacle, move forward
+        print("Path clear. Moving forward.")
+        forward_speed = 10
+        turn_speed = 0.0    
 
-    target = path[path_index]
-    move = (target[0] - robot_pos[0], target[1] - robot_pos[1])
-    if move == (0, 0):
-        path_index += 1
-        continue
-
-    if move != direction:
-        current_dir = dir_map[direction]
-        target_dir = dir_map.get(move)
-        if target_dir is None:
-            path_index += 1
-            continue
-        turns = (target_dir - current_dir) % 4
-        if turns == 1:
-            turn_right()
-        elif turns == 2:
-            turn_right()
-            turn_right()
-        elif turns == 3:
-            turn_left()
-        direction = move
-
-    move_forward_distance(CELL_SIZE)
-    update_position(move)
-    path_index += 1
+    motorL.setVelocity(forward_speed - turn_speed)
+    motorR.setVelocity(forward_speed + turn_speed)
