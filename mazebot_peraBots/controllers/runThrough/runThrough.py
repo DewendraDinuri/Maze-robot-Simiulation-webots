@@ -1,4 +1,4 @@
-# runThrough.py - Final updated version for red line, movement, and racing mode
+# runThrough.py - Updated with clamped velocity and red line check optimization
 
 from controller import Robot, Camera, Motor, DistanceSensor
 from controller2 import detect_red_line, a_star, PID
@@ -44,27 +44,36 @@ pid = PID(1.0, 0.0, 0.1)
 # Movement logic
 def center_and_avoid():
     left = sensors[0].getValue()
-    left2 = sensors[1].getValue()
     center = sensors[2].getValue()
-    right1 = sensors[3].getValue()
-    right2 = sensors[4].getValue()
+    right = sensors[4].getValue()
 
     forward_speed = 4.0
     turn_speed = 0.0
 
     if center < 900:
-        if left + left2 < right1 + right2:
-            turn_speed = 1.5  # sharper right
+        if left < right:
+            turn_speed = 1.0
         else:
-            turn_speed = -1.5  # sharper left
+            turn_speed = -1.0
 
     motorL.setVelocity(forward_speed - turn_speed)
     motorR.setVelocity(forward_speed + turn_speed)
 
+# Clamp function
+def clamp_velocity(v, limit=6.0):
+    return max(-limit, min(limit, v))
+
+frame_count = 0
+
 # Main loop
 while robot.step(timeStep) != -1:
-    image = camera.getImage()
-    red_detected = detect_red_line(image, camera_width, camera_height)
+    frame_count += 1
+
+    if frame_count % 5 == 0:
+        image = camera.getImage()
+        red_detected = detect_red_line(image, camera_width, camera_height)
+    else:
+        red_detected = False
 
     print("Red line detected:", red_detected)
     print("Started:", started, "Exploring:", exploring, "Racing:", racing_mode)
@@ -98,8 +107,10 @@ while robot.step(timeStep) != -1:
         error = target[0] - current_pos[0]
         correction = pid.compute(error)
 
-        motorL.setVelocity(6.0 - correction)
-        motorR.setVelocity(6.0 + correction)
+        left_speed = clamp_velocity(6.0 - correction)
+        right_speed = clamp_velocity(6.0 + correction)
+        motorL.setVelocity(left_speed)
+        motorR.setVelocity(right_speed)
 
         current_pos = (current_pos[0] + 1, current_pos[1])
         if current_pos == target:
