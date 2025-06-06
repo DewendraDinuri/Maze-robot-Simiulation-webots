@@ -1,4 +1,4 @@
-# runThrough.py - Updated with clamped velocity and red line check optimization
+# runThrough.py - Stabilized racing mode with position fix
 
 from controller import Robot, Camera, Motor, DistanceSensor
 from controller2 import detect_red_line, a_star, PID
@@ -92,14 +92,16 @@ while robot.step(timeStep) != -1:
         racing_mode = True
         optimized_path = a_star(position_log[0], position_log[-1], graph)
         path_index = 0
+        current_pos = position_log[0]  # reset to starting position
         continue
 
     if exploring:
         print("Exploring... Moving forward")
-        pos = current_pos
-        position_log.append(pos)
-        graph.setdefault(pos, []).append((pos[0] + 1, pos[1]))  # dummy neighbor
-        current_pos = (current_pos[0] + 1, current_pos[1])
+        if sensors[2].getValue() > 950:
+            pos = current_pos
+            position_log.append(pos)
+            graph.setdefault(pos, []).append((pos[0] + 1, pos[1]))
+            current_pos = (current_pos[0] + 1, current_pos[1])
         center_and_avoid()
 
     elif racing_mode and path_index < len(optimized_path):
@@ -107,14 +109,22 @@ while robot.step(timeStep) != -1:
         error = target[0] - current_pos[0]
         correction = pid.compute(error)
 
+        # Clamp correction
+        correction = max(min(correction, 2.0), -2.0)
+
         left_speed = clamp_velocity(6.0 - correction)
         right_speed = clamp_velocity(6.0 + correction)
+
         motorL.setVelocity(left_speed)
         motorR.setVelocity(right_speed)
 
-        current_pos = (current_pos[0] + 1, current_pos[1])
-        if current_pos == target:
+        print(f"[Racing] Target: {target}, Pos: {current_pos}, Correction: {correction}")
+
+        # Update only if robot is close enough to target
+        if abs(current_pos[0] - target[0]) < 1:
+            current_pos = target
             path_index += 1
+            print("Reached target. Moving to next waypoint.")
     else:
         motorL.setVelocity(0)
         motorR.setVelocity(0)
